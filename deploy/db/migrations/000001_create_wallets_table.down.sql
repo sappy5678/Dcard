@@ -1,3 +1,3 @@
 BEGIN;
-DROP TABLE ShortUrl;
+DROP TABLE short_url;
 COMMIT;
