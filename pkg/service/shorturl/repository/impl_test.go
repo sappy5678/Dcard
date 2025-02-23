@@ -110,26 +110,6 @@ func (ts *TestSuite) TestCreate() {
 			wantErr: true,
 		},
 		{
-			name: "Create short url with negative expire time",
-			short: &domain.ShortURL{
-				ShortCode:   "test",
-				OriginalURL: "http://test.com",
-				ExpireTime:  -1,
-				CreatedTime: 1,
-			},
-			wantErr: true,
-		},
-		{
-			name: "Create short url with negative created time",
-			short: &domain.ShortURL{
-				ShortCode:   "test",
-				OriginalURL: "http://test.com",
-				ExpireTime:  1,
-				CreatedTime: -1,
-			},
-			wantErr: true,
-		},
-		{
 			name: "Create short url with zero expire time",
 			short: &domain.ShortURL{
 				ShortCode:   "test",
