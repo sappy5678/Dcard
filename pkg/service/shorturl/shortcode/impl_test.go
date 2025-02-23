@@ -1,4 +1,4 @@
-package shortcodeid
+package shortcode
 
 import (
 	"testing"

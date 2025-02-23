@@ -1,4 +1,4 @@
-package shortcodeid
+package shortcode
 
 type MockShortCodeIDRepository struct {
 	NextIDFn func() string
