@@ -16,12 +16,12 @@ import (
 // postgresql error code define
 // http://www.postgresql.org/docs/9.3/static/errcodes-appendix.html
 
-type ShortURL struct {
+type impl struct {
 	db *sqlx.DB
 }
 
-func New(db *sqlx.DB) *ShortURL {
-	return &ShortURL{
+func New(db *sqlx.DB) Repository {
+	return &impl{
 		db: db,
 	}
 }
@@ -33,8 +33,8 @@ var (
 
 const createQuery = `INSERT INTO short_url (short_code, original_url, expire_time, created_time) VALUES ($1, $2, $3, $4)`
 
-func (s *ShortURL) Create(ctx context.Context, short *domain.ShortURL) (*domain.ShortURL, error) {
-	_, err := s.db.ExecContext(ctx, createQuery, short.ShortCode, short.OriginalURL, short.ExpireTime, short.CreatedTime)
+func (im *impl) Create(ctx context.Context, short *domain.ShortURL) (*domain.ShortURL, error) {
+	_, err := im.db.ExecContext(ctx, createQuery, short.ShortCode, short.OriginalURL, short.ExpireTime, short.CreatedTime)
 	if err != nil {
 		return nil, err
 	}
@@ -44,9 +44,9 @@ func (s *ShortURL) Create(ctx context.Context, short *domain.ShortURL) (*domain.
 
 const getQuery = `SELECT short_code, original_url, expire_time, created_time FROM short_url WHERE short_code = $1`
 
-func (s *ShortURL) Get(ctx context.Context, shortCode string) (*domain.ShortURL, error) {
+func (im *impl) Get(ctx context.Context, shortCode string) (*domain.ShortURL, error) {
 	var short domain.ShortURL
-	err := s.db.GetContext(ctx, &short, getQuery, shortCode)
+	err := im.db.GetContext(ctx, &short, getQuery, shortCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrShortURLNotFound

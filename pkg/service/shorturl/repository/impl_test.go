@@ -19,7 +19,7 @@ import (
 
 type TestSuite struct {
 	suite.Suite
-	impl         *repository.ShortURL
+	impl         repository.Repository
 	dbConnection *sqlx.DB
 	pgdb         *embeddedpostgres.EmbeddedPostgres
 	driver       database.Driver
