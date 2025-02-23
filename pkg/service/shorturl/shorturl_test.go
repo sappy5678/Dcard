@@ -13,6 +13,8 @@ import (
 	"github.com/sappy5678/dcard/pkg/service/shorturl/shortcode"
 )
 
+var mockHost = "http://test:test"
+
 type TestSuite struct {
 	suite.Suite
 	impl               domain.ShortURLService
@@ -28,7 +30,7 @@ func (ts *TestSuite) SetupSuite() {
 	ts.mockNowFn = func() uint64 {
 		return uint64(ts.mockNow.Unix())
 	}
-	ts.impl = shorturl.New("http://test:test", ts.mockNowFn, ts.shortCodeGenerator, ts.repo)
+	ts.impl = shorturl.New(mockHost, ts.mockNowFn, ts.shortCodeGenerator, ts.repo)
 }
 
 func (ts *TestSuite) TearDownSuite() {}
@@ -41,7 +43,7 @@ func (ts *TestSuite) TestCreate_NormalCase() {
 	ts.shortCodeGenerator.NextIDFunc = func() string { return "abc123" }
 	expectedShort := &domain.ShortURL{
 		ShortCode:   "abc123",
-		ShortURL:    "http://test:test/abc123",
+		ShortURL:    mockHost + "/abc123",
 		OriginalURL: "https://example.com",
 		ExpireTime:  expireTime,
 		CreatedTime: uint64(ts.mockNow.Unix()),
@@ -78,17 +80,25 @@ func (ts *TestSuite) TestGet_NormalCase() {
 	ts.mockNow = &now
 	expireTime := uint64(ts.mockNow.Add(time.Hour).Unix())
 
+	mockShortCode := "mockShortCode"
 	ts.repo.GetFunc = func(ctx context.Context, shortCode string) (*domain.ShortURL, error) {
 		return &domain.ShortURL{
 			ShortCode:   shortCode,
-			ShortURL:    fmt.Sprintf("http://test:test/%s", shortCode),
 			OriginalURL: "https://example.com",
 			ExpireTime:  expireTime,
 			CreatedTime: uint64(ts.mockNow.Unix()),
 		}, nil
 	}
+	expect := domain.ShortURL{
+		ShortCode:   mockShortCode,
+		ShortURL:    fmt.Sprintf("%s/%s", mockHost, mockShortCode),
+		OriginalURL: "https://example.com",
+		ExpireTime:  expireTime,
+		CreatedTime: uint64(ts.mockNow.Unix()),
+	}
 
 	result, err := ts.impl.Get(context.Background(), "abc123")
+	ts.Require().Equal(expect, result)
 
 	ts.Require().NoError(err)
 	ts.Require().NotNil(result)

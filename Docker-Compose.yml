@@ -2,7 +2,7 @@ services:
   api:
     environment:
       - DATABASE_URL=postgres://postgres:password@sql:5432/dcard?sslmode=disable
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis:6379
     build:
       context: .
       dockerfile: Dockerfile

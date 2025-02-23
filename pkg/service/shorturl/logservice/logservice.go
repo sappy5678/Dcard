@@ -14,7 +14,7 @@ func New(svc domain.ShortURLService, logger domain.Logger) *LogService {
 	}
 }
 
-// LogService represents wallet logging service
+// LogService represents shorturl logging service
 type LogService struct {
 	domain.ShortURLService
 	logger domain.Logger
@@ -22,9 +22,6 @@ type LogService struct {
 
 const name = "shorturl"
 
-// Create(ctx context.Context, originalURL string, expireTime uint64) (*ShortURL, error)
-//
-//	Get(ctx context.Context, shortCode string) (*ShortURL, error)
 func (ls *LogService) Create(ctx context.Context, originalURL string, expireTime uint64) (short *domain.ShortURL, err error) {
 	defer func(begin time.Time) {
 		ls.logger.Log(

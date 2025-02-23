@@ -65,11 +65,6 @@ func (h HTTP) create(c echo.Context) error {
 
 func (h HTTP) get(c echo.Context) error {
 	shortCode := c.Param("shortCode")
-	if shortCode == "" {
-		err := c.HTML(http.StatusOK, "mock home page") // should redirect to home page
-		return err
-	}
-
 	short, err := h.Service.Get(c.Request().Context(), shortCode)
 	if err != nil {
 		err := c.JSON(http.StatusNotFound, domain.ErrorRespond{Error: domain.ErrShortURLNotFound.Error()})
@@ -77,6 +72,4 @@ func (h HTTP) get(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusTemporaryRedirect, short.OriginalURL)
-	// c.Response().Header().Set(echo.HeaderLocation, short.OriginalURL)
-	// return c.JSON(http.StatusTemporaryRedirect, short)
 }

@@ -39,7 +39,6 @@ func (ts *TestSuite) SetupSuite() {
 	endpoint, err := redisC.Endpoint(ctx, "")
 	ts.Require().NoError(err)
 	ts.redis, err = rueidis.NewClient(rueidis.ClientOption{InitAddress: []string{endpoint}})
-	// time.Sleep(1 * time.Hour)
 	ts.Require().NoError(err)
 	ts.mockRepo = &repository.MockShortURLRepository{}
 	ts.impl = New(ts.mockRepo, ts.redis).(*impl)

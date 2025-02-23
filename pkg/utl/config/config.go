@@ -1,0 +1,35 @@
+package config
+
+import (
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v2"
+)
+
+// Load returns Configuration struct
+func Load(path string) (*Configuration, error) {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("error reading config file, %s", err)
+	}
+	cfg := new(Configuration)
+	if err := yaml.Unmarshal(bytes, cfg); err != nil {
+		return nil, fmt.Errorf("unable to decode into struct, %v", err)
+	}
+
+	return cfg, nil
+}
+
+// Configuration holds data necessary for configuring application
+type Configuration struct {
+	Server *Server `yaml:"server,omitempty"`
+}
+
+// Server holds data necessary for server configuration
+type Server struct {
+	Port         string `yaml:"port,omitempty"`
+	Debug        bool   `yaml:"debug,omitempty"`
+	ReadTimeout  int    `yaml:"read_timeout_seconds,omitempty"`
+	WriteTimeout int    `yaml:"write_timeout_seconds,omitempty"`
+}

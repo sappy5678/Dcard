@@ -91,12 +91,6 @@ func TestGet(t *testing.T) {
 			},
 			svc: mockErrShortURLService,
 		},
-		{
-			name:       "home page",
-			pathParam:  "",
-			wantStatus: http.StatusOK,
-			svc:        mockShortURLService,
-		},
 	}
 
 	for _, tt := range tests {

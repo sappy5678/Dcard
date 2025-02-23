@@ -7,12 +7,16 @@ import (
 	"github.com/sappy5678/dcard/pkg/domain"
 )
 
+func (im *shorturlService) getShortURL(shortCode string) string {
+	return fmt.Sprintf("%s/%s", im.host, shortCode)
+}
+
 func (im *shorturlService) Create(ctx context.Context, originalURL string, expireTime uint64) (*domain.ShortURL, error) {
 	shortCode := im.shortcodeGenerator.NextID()
 	shortURL := &domain.ShortURL{
 		ShortCode:   shortCode,
 		OriginalURL: originalURL,
-		ShortURL:    fmt.Sprintf("%s/%s", im.host, shortCode),
+		ShortURL:    im.getShortURL(shortCode),
 		ExpireTime:  expireTime,
 		CreatedTime: im.now(),
 	}
@@ -31,6 +35,7 @@ func (im *shorturlService) Get(ctx context.Context, shortCode string) (*domain.S
 	if err != nil {
 		return nil, err
 	}
+	shortURL.ShortURL = im.getShortURL(shortCode)
 	if shortURL == nil || !shortURL.IsValid(im.now()) {
 		return nil, domain.ErrShortURLNotFound
 	}
