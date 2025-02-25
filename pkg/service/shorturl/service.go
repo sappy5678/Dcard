@@ -5,6 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/redis/rueidis"
+	"github.com/redis/rueidis/rueidislock"
 
 	"github.com/sappy5678/dcard/pkg/domain"
 	"github.com/sappy5678/dcard/pkg/service/shorturl/cache"
@@ -29,9 +30,9 @@ func New(host string, now func() uint64, shortcodeGenerator shortcode.Repository
 	}
 }
 
-func Initialize(machineID uint64, host string, db *sqlx.DB, redis rueidis.Client) domain.ShortURLService {
+func Initialize(machineID uint64, host string, db *sqlx.DB, redis rueidis.Client, locker rueidislock.Locker) domain.ShortURLService {
 	shortcodeGenerator := shortcode.New(machineID)
-	cacheRepo := cache.New(repository.New(db), redis)
+	cacheRepo := cache.New(repository.New(db), redis, locker)
 	now := func() uint64 {
 		now := time.Now().Unix()
 		return uint64(now)

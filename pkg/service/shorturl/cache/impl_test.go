@@ -5,18 +5,21 @@ import (
 	"testing"
 
 	"github.com/redis/rueidis"
+	"github.com/redis/rueidis/rueidislock"
 	"github.com/stretchr/testify/suite"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 
 	"github.com/sappy5678/dcard/pkg/domain"
 	"github.com/sappy5678/dcard/pkg/service/shorturl/repository"
+	redisLocker "github.com/sappy5678/dcard/pkg/utl/locker"
 )
 
 type TestSuite struct {
 	suite.Suite
 	impl       *impl
 	redis      rueidis.Client
+	locker     rueidislock.Locker
 	mockRepo   *repository.MockShortURLRepository
 	containers []testcontainers.Container
 }
@@ -40,8 +43,10 @@ func (ts *TestSuite) SetupSuite() {
 	ts.Require().NoError(err)
 	ts.redis, err = rueidis.NewClient(rueidis.ClientOption{InitAddress: []string{endpoint}})
 	ts.Require().NoError(err)
+	ts.locker, err = redisLocker.New(endpoint)
+	ts.Require().NoError(err)
 	ts.mockRepo = &repository.MockShortURLRepository{}
-	ts.impl = New(ts.mockRepo, ts.redis).(*impl)
+	ts.impl = New(ts.mockRepo, ts.redis, ts.locker).(*impl)
 }
 
 func (ts *TestSuite) TearDownSuite() {

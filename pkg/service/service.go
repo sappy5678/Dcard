@@ -41,6 +41,7 @@ import (
 	sl "github.com/sappy5678/dcard/pkg/service/shorturl/logservice"
 	st "github.com/sappy5678/dcard/pkg/service/shorturl/transport"
 	"github.com/sappy5678/dcard/pkg/utl/config"
+	redisLocker "github.com/sappy5678/dcard/pkg/utl/locker"
 	"github.com/sappy5678/dcard/pkg/utl/postgres"
 	"github.com/sappy5678/dcard/pkg/utl/redis"
 	"github.com/sappy5678/dcard/pkg/utl/server"
@@ -59,6 +60,11 @@ func Start(cfg *config.Configuration) error {
 		return err
 	}
 
+	locker, err := redisLocker.New(os.Getenv("REDIS_URL"))
+	if err != nil {
+		return err
+	}
+
 	log := zlog.New()
 
 	host := "http://localhost:8080" // should get from central config service
@@ -66,7 +72,7 @@ func Start(cfg *config.Configuration) error {
 
 	e := server.New()
 	rootGroup := e.Group("")
-	st.NewHTTP(sl.New(shorturl.Initialize(machineID, host, db, redisClient), log), rootGroup)
+	st.NewHTTP(sl.New(shorturl.Initialize(machineID, host, db, redisClient, locker), log), rootGroup)
 
 	rootGroup.GET("/health", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{

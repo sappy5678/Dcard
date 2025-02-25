@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 
 	"github.com/redis/rueidis"
+	"github.com/redis/rueidis/rueidislock"
 
 	"github.com/sappy5678/dcard/pkg/domain"
 	"github.com/sappy5678/dcard/pkg/service/shorturl/repository"
 )
 
 type impl struct {
-	repo  repository.Repository
-	redis rueidis.Client
+	repo   repository.Repository
+	redis  rueidis.Client
+	locker rueidislock.Locker
 }
 
 const (
@@ -21,10 +23,11 @@ const (
 	bfErr = 1e-6
 )
 
-func New(r repository.Repository, redis rueidis.Client) Repository {
+func New(r repository.Repository, redis rueidis.Client, locker rueidislock.Locker) Repository {
 	return &impl{
-		repo:  r,
-		redis: redis,
+		repo:   r,
+		redis:  redis,
+		locker: locker,
 	}
 }
 
@@ -60,7 +63,22 @@ func (im *impl) Get(ctx context.Context, shortCode string) (*domain.ShortURL, er
 		return nil, err
 	}
 
-	// Cache miss
+	// get lock to avoid thundering herd
+	ctx, cancel, err := im.locker.WithContext(ctx, shortCode)
+	if err != nil {
+		return nil, err
+	}
+	defer cancel()
+	// Get the short URL from the cache again, so request with secondary lock can get from cache
+	short, err = im.getCache(ctx, shortCode)
+	if err == nil {
+		// Cache hit
+		return short, nil
+	}
+	if err != rueidis.Nil {
+		return nil, err
+	}
+	// Cache miss, get data and set it to cache
 	short, err = im.repo.Get(ctx, shortCode)
 	if err != nil {
 		return nil, err
